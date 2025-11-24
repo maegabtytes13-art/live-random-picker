@@ -1,7 +1,10 @@
 from flask import Flask, render_template_string, request
 from flask_socketio import SocketIO
 import random
+import eventlet
 
+# Patch sockets for eventlet
+eventlet.monkey_patch()
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
@@ -28,7 +31,7 @@ HTML_PAGE = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Random Picker Live</title>
+    <title>GP Online Bunutan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <style>
         body { font-family: Arial; max-width:700px; margin:50px auto; text-align:center; }
@@ -44,7 +47,7 @@ HTML_PAGE = """
 </head>
 <body>
 
-<h1>Random Picker (Live)</h1>
+<h1>GP Online Bunutan 2025</h1>
 
 <input id="username" placeholder="Enter your name">
 <button class="pick-btn" onclick="startShuffle()">Pick & Assign</button>
@@ -57,7 +60,6 @@ HTML_PAGE = """
 <h4>Remaining Items: <span id="remaining"></span></h4>
 
 <script>
-// Small tick sound
 const tickSound = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
 var socket = io();
 
@@ -88,7 +90,6 @@ function resetAll(){
     socket.emit('reset');
 }
 
-// Update assignments live
 socket.on('update', function(data){
     let list = document.getElementById('assignments');
     list.innerHTML='';
@@ -100,10 +101,8 @@ socket.on('update', function(data){
     document.getElementById('remaining').innerText = data.items.length;
 });
 
-// Alert pick messages
 socket.on('message', function(msg){ alert(msg); });
 
-// Request current state on connect
 socket.on('connect', function(){ socket.emit('connect_request'); });
 </script>
 
@@ -166,4 +165,4 @@ def emit_state():
 if __name__=="__main__":
     import os
     port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host="0.0.0.0", port=port, debug=False, use_reloader=False)
+    socketio.run(app, host="0.0.0.0", port=port)
