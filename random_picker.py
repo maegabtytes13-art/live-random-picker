@@ -29,7 +29,7 @@ PREDEFINED_ITEMS = [
 # Admin username
 ADMIN_USER = "admin"  # Replace with your chosen admin username
 
-# HTML template with shuffle animation, sound, left-aligned assignments and headings, admin reset
+# HTML template with shuffle animation, sound, left-aligned assignments and headings, admin reset, and mobile responsiveness
 HTML_PAGE = """
 <!DOCTYPE html>
 <html>
@@ -37,21 +37,64 @@ HTML_PAGE = """
     <title>GP Online Bunutan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <style>
-        body { font-family: Arial; max-width:700px; margin:50px auto; text-align:center; }
-        input { width:100%; padding:10px; margin-bottom:15px; }
-        button { padding:10px 20px; color:white; border:none; cursor:pointer; margin:5px; }
+        body { 
+            font-family: Arial; 
+            max-width:700px; 
+            margin:50px auto; 
+            text-align:center; 
+            padding: 0 10px; 
+            box-sizing: border-box;
+        }
+
+        input { 
+            width: 100%; 
+            padding:10px; 
+            margin-bottom:15px; 
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        button { 
+            padding:10px 20px; 
+            color:white; 
+            border:none; 
+            cursor:pointer; 
+            margin:5px; 
+            font-size: 1em;
+            border-radius:5px;
+        }
+
         .pick-btn { background-color:#4CAF50; }
         .pick-btn:hover { background-color:#45a049; }
         .reset-btn { background-color:#d9534f; }
         .reset-btn:hover { background-color:#c9302c; }
-        #shuffleDisplay { font-size:22px; height:30px; margin-top:20px; color:#333; }
+
+        #shuffleDisplay { 
+            font-size:22px; 
+            height:30px; 
+            margin-top:20px; 
+            color:#333; 
+            word-wrap: break-word;
+        }
+
         .assignments { 
-            list-style-type: none;   /* removes bullet points */
+            list-style-type: none;  
             padding: 0;              
             text-align: left;        
             margin-top: 25px;
+            word-wrap: break-word;
         }
+
         .left-align { text-align: left; }
+
+        /* Mobile responsive */
+        @media (max-width: 480px) {
+            body { margin: 20px auto; max-width: 100%; }
+            h1 { font-size: 1.5em; }
+            h3, h4 { font-size: 1.1em; }
+            #shuffleDisplay { font-size: 18px; }
+            button { width: 100%; padding: 12px 0; font-size: 1em; margin-bottom: 10px; }
+        }
     </style>
 </head>
 <body>
