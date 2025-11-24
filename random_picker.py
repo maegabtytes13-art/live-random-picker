@@ -26,7 +26,7 @@ PREDEFINED_ITEMS = [
     "Something for foot care"
 ]
 
-# HTML template with shuffle animation and sound
+# HTML template with shuffle animation, sound, and left-aligned assignments
 HTML_PAGE = """
 <!DOCTYPE html>
 <html>
@@ -42,7 +42,12 @@ HTML_PAGE = """
         .reset-btn { background-color:#d9534f; }
         .reset-btn:hover { background-color:#c9302c; }
         #shuffleDisplay { font-size:22px; height:30px; margin-top:20px; color:#333; }
-        .assignments { text-align:left; margin-top:25px; }
+        .assignments { 
+            list-style-type: none;   /* removes bullet points */
+            padding: 0;              /* remove default padding */
+            text-align: left;        /* align text to left */
+            margin-top: 25px;
+        }
     </style>
 </head>
 <body>
@@ -56,7 +61,7 @@ HTML_PAGE = """
 <div id="shuffleDisplay"></div>
 
 <h3>Assignments:</h3>
-<ul id="assignments"></ul>
+<ul id="assignments" class="assignments"></ul>
 <h4>Remaining Items: <span id="remaining"></span></h4>
 
 <script>
