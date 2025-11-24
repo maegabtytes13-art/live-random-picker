@@ -1,6 +1,10 @@
-from flask import Flask, render_template_string, session
-from flask_socketio import SocketIO, emit
+from flask import Flask, render_template_string, request
+from flask_socketio import SocketIO
 import random
+import eventlet
+
+# Patch sockets for eventlet
+eventlet.monkey_patch()
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
@@ -22,7 +26,7 @@ PREDEFINED_ITEMS = [
     "Something for foot care"
 ]
 
-# HTML page with shuffle animation + sound
+# HTML template with shuffle animation and sound
 HTML_PAGE = """
 <!DOCTYPE html>
 <html>
@@ -56,11 +60,10 @@ HTML_PAGE = """
 <h4>Remaining Items: <span id="remaining"></span></h4>
 
 <script>
-// Base64 small tick sound
+// Small tick sound
 const tickSound = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
 var socket = io();
 
-// Shuffle animation + sound + pick
 function startShuffle(){
     let username = document.getElementById('username').value.trim();
     if(!username){ alert('Enter a name'); return; }
@@ -111,11 +114,10 @@ socket.on('connect', function(){ socket.emit('connect_request'); });
 </html>
 """
 
-# Global live state
+# Live global state
 live_items = PREDEFINED_ITEMS.copy()
 live_assignments = {}
 
-# Flask route
 @app.route("/")
 def index():
     return HTML_PAGE
@@ -123,11 +125,10 @@ def index():
 # SocketIO events
 @socketio.on('connect_request')
 def handle_connect():
-    emit('update', {'assignments': live_assignments, 'items': live_items})
+    emit_state()
 
 @socketio.on('get_items')
 def handle_get_items(data):
-    emit('get_items_response', live_items, callback=request.sid)
     return live_items
 
 @socketio.on('pick')
@@ -137,31 +138,35 @@ def handle_pick(data):
     lower_map = {name.lower(): name for name in live_assignments}
 
     if not username:
-        emit('message', "You must enter a name.", to=request.sid)
+        socketio.emit('message', "You must enter a name.", to=request.sid)
         return
 
     if username.lower() in lower_map:
         orig = lower_map[username.lower()]
-        emit('message', f"{orig} already has: {live_assignments[orig]}", to=request.sid)
+        socketio.emit('message', f"{orig} already has: {live_assignments[orig]}", to=request.sid)
         return
 
     if not live_items:
-        emit('message', "No items remaining!", to=request.sid)
+        socketio.emit('message', "No items remaining!", to=request.sid)
         return
 
     selected = random.choice(live_items)
     live_items.remove(selected)
     live_assignments[username] = selected
 
-    # Broadcast to all clients
-    socketio.emit('update', {'assignments': live_assignments, 'items': live_items})
+    emit_state()
 
 @socketio.on('reset')
 def handle_reset():
     global live_items, live_assignments
     live_items = PREDEFINED_ITEMS.copy()
     live_assignments = {}
+    emit_state()
+
+def emit_state():
     socketio.emit('update', {'assignments': live_assignments, 'items': live_items})
 
 if __name__=="__main__":
-    socketio.run(app, host="0.0.0.0", port=5000)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host="0.0.0.0", port=port)
