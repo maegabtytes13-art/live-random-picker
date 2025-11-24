@@ -1,10 +1,7 @@
 from flask import Flask, render_template_string, request
 from flask_socketio import SocketIO
 import random
-import eventlet
 
-# Patch sockets for eventlet
-eventlet.monkey_patch()
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
@@ -169,4 +166,4 @@ def emit_state():
 if __name__=="__main__":
     import os
     port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host="0.0.0.0", port=port)
+    socketio.run(app, host="0.0.0.0", port=port, debug=False, use_reloader=False)
