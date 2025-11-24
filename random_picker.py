@@ -27,7 +27,16 @@ PREDEFINED_ITEMS = [
 ]
 
 # Admin username
-ADMIN_USER = "admin"  # Replace with your chosen admin username
+ADMIN_USER = "admin"
+
+# Other allowed usernames
+ALLOWED_USERS = [
+    "Jena", "Rogie", "Robert", "Adeth", "Tart", "Jhoren",
+    "Pham", "Bjei", "Jha", "Drin", "Patty", "Maria"
+]
+
+# Combine admin with allowed users for validation
+ALL_USERS = [ADMIN_USER] + ALLOWED_USERS
 
 # HTML template with shuffle animation, sound, left-aligned assignments and headings, admin reset, and mobile responsiveness
 HTML_PAGE = """
@@ -116,10 +125,17 @@ const tickSound = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABA
 var socket = io();
 
 const ADMIN_USER = "admin";  // Must match app.py
+const ALLOWED_USERS = ["Jena","Rogie","Robert","Adeth","Tart","Jhoren","Pham","Bjei","Jha","Drin","Patty","Maria"];
 
 function startShuffle(){
     let username = document.getElementById('username').value.trim();
     if(!username){ alert('Enter a name'); return; }
+
+    // Check allowed users (case-insensitive)
+    if(username.toLowerCase() !== ADMIN_USER.toLowerCase() && !ALLOWED_USERS.map(u=>u.toLowerCase()).includes(username.toLowerCase())){
+        alert(username + " is not allowed to pick.");
+        return;
+    }
 
     socket.emit('get_items', {}, function(items){
         if(items.length===0){ alert('No items remaining!'); return; }
@@ -196,12 +212,17 @@ def handle_get_items(data):
 def handle_pick(data):
     global live_items, live_assignments
     username = data.get('username','').strip()
-    lower_map = {name.lower(): name for name in live_assignments}
-
     if not username:
         socketio.emit('message', "You must enter a name.", to=request.sid)
         return
 
+    # Check if username is allowed (case-insensitive)
+    if username.lower() not in [u.lower() for u in ALL_USERS]:
+        socketio.emit('message', f"{username} is not allowed to pick.", to=request.sid)
+        return
+
+    # Check if user already picked
+    lower_map = {name.lower(): name for name in live_assignments}
     if username.lower() in lower_map:
         orig = lower_map[username.lower()]
         socketio.emit('message', f"{orig} already has: {live_assignments[orig]}", to=request.sid)
@@ -211,10 +232,10 @@ def handle_pick(data):
         socketio.emit('message', "No items remaining!", to=request.sid)
         return
 
+    # Pick item
     selected = random.choice(live_items)
     live_items.remove(selected)
     live_assignments[username] = selected
-
     emit_state()
 
 @socketio.on('reset')
