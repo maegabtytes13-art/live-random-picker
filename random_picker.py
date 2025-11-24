@@ -26,7 +26,10 @@ PREDEFINED_ITEMS = [
     "Something for foot care"
 ]
 
-# HTML template with shuffle animation, sound, and left-aligned assignments
+# Admin username
+ADMIN_USER = "admin"  # Replace with your chosen admin username
+
+# HTML template with shuffle animation, sound, left-aligned assignments and headings, admin reset
 HTML_PAGE = """
 <!DOCTYPE html>
 <html>
@@ -44,10 +47,11 @@ HTML_PAGE = """
         #shuffleDisplay { font-size:22px; height:30px; margin-top:20px; color:#333; }
         .assignments { 
             list-style-type: none;   /* removes bullet points */
-            padding: 0;              /* remove default padding */
-            text-align: left;        /* align text to left */
+            padding: 0;              
+            text-align: left;        
             margin-top: 25px;
         }
+        .left-align { text-align: left; }
     </style>
 </head>
 <body>
@@ -56,17 +60,19 @@ HTML_PAGE = """
 
 <input id="username" placeholder="Enter your name">
 <button class="pick-btn" onclick="startShuffle()">Pick & Assign</button>
-<button class="reset-btn" onclick="resetAll()">Reset All</button>
+<button class="reset-btn" style="display:none;" onclick="resetAll()">Reset All</button>
 
 <div id="shuffleDisplay"></div>
 
-<h3>Assignments:</h3>
+<h3 class="left-align">Assignments:</h3>
 <ul id="assignments" class="assignments"></ul>
-<h4>Remaining Items: <span id="remaining"></span></h4>
+<h4 class="left-align">Remaining Items: <span id="remaining"></span></h4>
 
 <script>
 const tickSound = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
 var socket = io();
+
+const ADMIN_USER = "admin";  // Must match app.py
 
 function startShuffle(){
     let username = document.getElementById('username').value.trim();
@@ -90,6 +96,17 @@ function startShuffle(){
         }, 3000);
     });
 }
+
+// Show reset button only if current user is admin
+document.getElementById('username').addEventListener('input', function(){
+    let username = this.value.trim();
+    let resetBtn = document.querySelector('.reset-btn');
+    if(username.toLowerCase() === ADMIN_USER.toLowerCase()){
+        resetBtn.style.display = "inline-block";
+    } else {
+        resetBtn.style.display = "none";
+    }
+});
 
 function resetAll(){
     socket.emit('reset');
