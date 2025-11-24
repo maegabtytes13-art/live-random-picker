@@ -1,4 +1,6 @@
+pip
 setuptools
+wheel
 Flask==2.3.2
 Flask-SocketIO==5.5.1
 gevent==22.10.2
